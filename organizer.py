@@ -12,6 +12,23 @@ category_folders = {
     'others': r'D:\Others'
 }
 
+def get_subfolder(category_folder):
+    print("Choose a subfolder:")
+    subfolders = [f.name for f in os.scandir(category_folder) if f.is_dir()]
+    for i, subfolder in enumerate(subfolders, start=1):
+        print(f"{i}. {subfolder}")
+    print(f"{len(subfolders) + 1}. Create new subfolder")
+    while True:
+        choice = input("Enter the number corresponding to your choice: ")
+        if choice.isdigit() and 1 <= int(choice) <= len(subfolders) + 1:
+            if int(choice) == len(subfolders) + 1:
+                new_subfolder = input("Enter the name of the new subfolder: ")
+                return os.path.join(category_folder, new_subfolder)
+            else:
+                return os.path.join(category_folder, subfolders[int(choice) - 1])
+        else:
+            print("Invalid choice. Please enter a number between 1 and", len(subfolders) + 1)
+
 # Function to prompt user for category
 def get_category():
     while True:
@@ -27,12 +44,13 @@ def get_category():
 # Function to move file to specified category folder
 def organize_file(file_path, category):
     destination_folder = category_folders[category]
+    destination_folder = get_subfolder(destination_folder)
     if not os.path.exists(destination_folder):
         os.makedirs(destination_folder)
     file_name = os.path.basename(file_path)
     destination_path = os.path.join(destination_folder, file_name)
     shutil.move(file_path, destination_path)
-    print(f"File moved to {category} folder.")
+    print(f"File moved to {destination_folder}.")
 
 # Main function
 def main():
