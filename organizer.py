@@ -13,21 +13,28 @@ category_folders = {
 }
 
 def get_subfolder(category_folder):
-    print("Choose a subfolder:")
-    subfolders = [f.name for f in os.scandir(category_folder) if f.is_dir()]
-    for i, subfolder in enumerate(subfolders, start=1):
-        print(f"{i}. {subfolder}")
-    print(f"{len(subfolders) + 1}. Create new subfolder")
     while True:
+        print("Choose a subfolder:")
+        subfolders = [f.name for f in os.scandir(category_folder) if f.is_dir()]
+        for i, subfolder in enumerate(subfolders, start=1):
+            print(f"{i}. {subfolder}")
+        print(f"{len(subfolders) + 1}. Create new subfolder")
+        print(f"{len(subfolders) + 2}. Select this folder")
         choice = input("Enter the number corresponding to your choice: ")
-        if choice.isdigit() and 1 <= int(choice) <= len(subfolders) + 1:
+        if choice.isdigit() and 1 <= int(choice) <= len(subfolders) + 2:
             if int(choice) == len(subfolders) + 1:
-                new_subfolder = input("Enter the name of the new subfolder: ")
-                return os.path.join(category_folder, new_subfolder)
+                while True:
+                    new_subfolder = input("Enter the name of the new subfolder: ")
+                    if new_subfolder in subfolders:
+                        print("A subfolder with this name already exists. Please enter a different name.")
+                    else:
+                        return os.path.join(category_folder, new_subfolder)
+            elif int(choice) == len(subfolders) + 2:
+                return category_folder
             else:
-                return os.path.join(category_folder, subfolders[int(choice) - 1])
+                category_folder = os.path.join(category_folder, subfolders[int(choice) - 1])
         else:
-            print("Invalid choice. Please enter a number between 1 and", len(subfolders) + 1)
+            print("Invalid choice. Please enter a number between 1 and", len(subfolders) + 2)
 
 # Function to prompt user for category
 def get_category():
