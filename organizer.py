@@ -1,28 +1,37 @@
 import os
+import shutil
 
-# Define categories
-categories = ['anime', 'movie', 'series', 'school stuff', 'books', 'images', 'others']
+# Define categories and their corresponding folders
+category_folders = {
+    'anime': r'D:\MOVIEs\Anime',
+    'movie': r'D:\MOVIEs\MOVIe',
+    'series': r'D:\MOVIEs\SERIEs',
+    'school stuff': r'D:\School',
+    'books': r'D:\Books',
+    'images': r'C:\Users\Admin\Pictures',
+    'others': r'D:\Others'
+}
 
 # Function to prompt user for category
 def get_category():
     while True:
         print("Choose a category for the file:")
-        for i, category in enumerate(categories, start=1):
+        for i, category in enumerate(category_folders.keys(), start=1):
             print(f"{i}. {category}")
         choice = input("Enter the number corresponding to the category: ")
-        if choice.isdigit() and 1 <= int(choice) <= len(categories):
-            return categories[int(choice) - 1]
+        if choice.isdigit() and 1 <= int(choice) <= len(category_folders):
+            return list(category_folders.keys())[int(choice) - 1]
         else:
-            print("Invalid choice. Please enter a number between 1 and", len(categories))
+            print("Invalid choice. Please enter a number between 1 and", len(category_folders))
 
 # Function to move file to specified category folder
 def organize_file(file_path, category):
-    destination_folder = os.path.join(os.getcwd(), category)
+    destination_folder = category_folders[category]
     if not os.path.exists(destination_folder):
         os.makedirs(destination_folder)
     file_name = os.path.basename(file_path)
     destination_path = os.path.join(destination_folder, file_name)
-    os.rename(file_path, destination_path)
+    shutil.move(file_path, destination_path)
     print(f"File moved to {category} folder.")
 
 # Main function
