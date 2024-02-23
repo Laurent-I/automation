@@ -1,8 +1,12 @@
 import os
+import sys
+import time
 import shutil
 from tkinter import Tk
 from tkinter import filedialog
 from tkinter import messagebox
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 # Define categories and their corresponding folders
 category_folders = {
@@ -62,10 +66,10 @@ def organize_file(file_path, category):
     shutil.move(file_path, destination_path)
     print(f"File moved to {destination_folder}.")
 
-def select_file(root):
+def select_file(root, file_path=None):
     try:
-        # Open the file dialog
-        file_path = filedialog.askopenfilename()
+        if file_path is None:
+            file_path = filedialog.askopenfilename(parent=root)
         if not file_path:
             return
         if not os.path.exists(file_path):
@@ -87,14 +91,30 @@ def select_file(root):
         print(f"An error occurred: {e}")
         root.destroy()
 
-# Main function
+class DownloadHandler(FileSystemEventHandler):
+    def __init__(self, root):
+        self.root = root
+
+    def on_created(self, event):
+        if not event.is_directory:
+            time.sleep(1)  # wait for 1 second
+            select_file(self.root, event.src_path)
+
 def main():
     # Create the root Tk window
     root = Tk()
     root.withdraw()
 
-     # Start the file selection
-    root.after(500, lambda: select_file(root))  # Start after 1 second
+    # If the script was run with the argument "monitor", set up the watchdog observer
+    if len(sys.argv) > 1 and sys.argv[1] == "monitor":
+        event_handler = DownloadHandler(root)
+        path = r'C:\Users\Admin\Downloads'
+        observer = Observer()
+        observer.schedule(event_handler, path, recursive=True)
+        observer.start()
+    else:
+        # Otherwise, just open the file selection dialog
+        select_file(root)
 
     # Start the Tkinter event loop
     root.mainloop()
