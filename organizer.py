@@ -1,5 +1,8 @@
 import os
 import shutil
+from tkinter import Tk
+from tkinter import filedialog
+from tkinter import messagebox
 
 # Define categories and their corresponding folders
 category_folders = {
@@ -59,17 +62,42 @@ def organize_file(file_path, category):
     shutil.move(file_path, destination_path)
     print(f"File moved to {destination_folder}.")
 
-# Main function
-def main():
-    while True:
-        file_path = input("Enter the path of the file to organize (or 'exit' to quit): ")
-        if file_path.lower() == 'exit':
-            break
+def select_file(root):
+    try:
+        # Open the file dialog
+        file_path = filedialog.askopenfilename()
+        if not file_path:
+            return
         if not os.path.exists(file_path):
-            print("File not found. Please enter a valid file path.")
-            continue
+            print("File not found. Please select a valid file.")
+            return
         category = get_category()
         organize_file(file_path, category)
+
+        # Make the root window visible
+        root.deiconify()
+
+        # Ask the user if they want to continue
+        if messagebox.askyesno("Continue?", "Do you want to move another file?"):
+            # Schedule the next file selection
+            root.after(500, select_file, root)  # Try again after 0.5 seconds
+        else:
+            root.destroy()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        root.destroy()
+
+# Main function
+def main():
+    # Create the root Tk window
+    root = Tk()
+    root.withdraw()
+
+     # Start the file selection
+    root.after(500, lambda: select_file(root))  # Start after 1 second
+
+    # Start the Tkinter event loop
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
