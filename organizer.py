@@ -96,8 +96,9 @@ class DownloadHandler(FileSystemEventHandler):
         self.root = root
 
     def on_created(self, event):
-        if not event.is_directory:
-            time.sleep(1)  # wait for 1 second
+        if not event.is_directory and event.event_type == "created":
+            time.sleep(10)  # wait for 1 second
+            print(f"Detected new file: {event.src_path}")
             select_file(self.root, event.src_path)
 
 def main():
@@ -112,6 +113,15 @@ def main():
         observer = Observer()
         observer.schedule(event_handler, path, recursive=True)
         observer.start()
+
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            observer.stop()
+            root.destroy()
+            print("Observer stopped.")
+        observer.join()
     else:
         # Otherwise, just open the file selection dialog
         select_file(root)
