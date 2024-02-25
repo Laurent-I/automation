@@ -66,17 +66,19 @@ def organize_file(file_path, category):
     shutil.move(file_path, destination_path)
     print(f"File moved to {destination_folder}.")
 
-def select_file(root, file_path=None):
+def select_files(root, file_paths=None):
     try:
-        if file_path is None:
-            file_path = filedialog.askopenfilename(parent=root)
-        if not file_path:
+        if file_paths is None:
+            file_paths = filedialog.askopenfilenames(parent=root)
+        if not file_paths:
             return
-        if not os.path.exists(file_path):
-            print("File not found. Please select a valid file.")
-            return
-        category = get_category()
-        organize_file(file_path, category)
+        for file_path in root.tk.splitlist(file_paths):
+            if not os.path.exists(file_path):
+                print(f"File not found: {file_path}. Please select a valid file.")
+                continue
+            print(f"Processing file: {file_path}")
+            category = get_category()
+            organize_file(file_path, category)
 
         # Make the root window visible
         root.deiconify()
@@ -84,7 +86,7 @@ def select_file(root, file_path=None):
         # Ask the user if they want to continue
         if messagebox.askyesno("Continue?", "Do you want to move another file?"):
             # Schedule the next file selection
-            root.after(500, select_file, root)  # Try again after 0.5 seconds
+            root.after(500, select_files, root)  # Try again after 0.5 seconds
         else:
             root.destroy()
     except Exception as e:
@@ -99,7 +101,7 @@ class DownloadHandler(FileSystemEventHandler):
         if not event.is_directory and event.event_type == "created":
             time.sleep(10)  # wait for 1 second
             print(f"Detected new file: {event.src_path}")
-            select_file(self.root, event.src_path)
+            select_files(self.root, event.src_path)
 
 def main():
     # Create the root Tk window
@@ -124,7 +126,7 @@ def main():
         observer.join()
     else:
         # Otherwise, just open the file selection dialog
-        select_file(root)
+        select_files(root)
 
     # Start the Tkinter event loop
     root.mainloop()
