@@ -19,6 +19,9 @@ category_folders = {
     'others': r'D:\Others'
 }
 
+class GoBackException(Exception):
+    pass
+
 def get_subfolder(category_folder):
     while True:
         print("Choose a subfolder:")
@@ -27,8 +30,9 @@ def get_subfolder(category_folder):
             print(f"{i}. {subfolder}")
         print(f"{len(subfolders) + 1}. Create new subfolder")
         print(f"{len(subfolders) + 2}. Select this folder")
+        print(f"{len(subfolders) + 3}. Go back")
         choice = input("Enter the number corresponding to your choice: ")
-        if choice.isdigit() and 1 <= int(choice) <= len(subfolders) + 2:
+        if choice.isdigit() and 1 <= int(choice) <= len(subfolders) + 3:
             if int(choice) == len(subfolders) + 1:
                 while True:
                     new_subfolder = input("Enter the name of the new subfolder: ")
@@ -38,10 +42,12 @@ def get_subfolder(category_folder):
                         return os.path.join(category_folder, new_subfolder)
             elif int(choice) == len(subfolders) + 2:
                 return category_folder
+            elif int(choice) == len(subfolders) + 3:
+                raise GoBackException
             else:
                 category_folder = os.path.join(category_folder, subfolders[int(choice) - 1])
         else:
-            print("Invalid choice. Please enter a number between 1 and", len(subfolders) + 2)
+            print("Invalid choice. Please enter a number between 1 and", len(subfolders) + 3)
 
 # Function to prompt user for category
 def get_category():
@@ -49,11 +55,14 @@ def get_category():
         print("Choose a category for the file:")
         for i, category in enumerate(category_folders.keys(), start=1):
             print(f"{i}. {category}")
+        print(f"{len(category_folders) + 1}. Go back")
         choice = input("Enter the number corresponding to the category: ")
-        if choice.isdigit() and 1 <= int(choice) <= len(category_folders):
+        if choice.isdigit() and 1 <= int(choice) <= len(category_folders) + 1:
+            if int(choice) == len(category_folders) + 1:
+                raise GoBackException
             return list(category_folders.keys())[int(choice) - 1]
         else:
-            print("Invalid choice. Please enter a number between 1 and", len(category_folders))
+            print("Invalid choice. Please enter a number between 1 and", len(category_folders) + 1)
 
 # Function to move file to specified category folder
 def organize_file(file_path, category):
@@ -77,8 +86,13 @@ def select_files(root, file_paths=None):
                 print(f"File not found: {file_path}. Please select a valid file.")
                 continue
             print(f"Processing file: {file_path}")
-            category = get_category()
-            organize_file(file_path, category)
+            while True:
+                try:
+                    category = get_category()
+                    organize_file(file_path, category)
+                    break
+                except GoBackException:
+                    print("Going back...")
 
         # Make the root window visible
         root.deiconify()
