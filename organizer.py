@@ -23,6 +23,7 @@ class GoBackException(Exception):
     pass
 
 def get_subfolder(category_folder):
+    folder_stack = []
     while True:
         print("Choose a subfolder:")
         subfolders = [f.name for f in os.scandir(category_folder) if f.is_dir()]
@@ -43,8 +44,12 @@ def get_subfolder(category_folder):
             elif int(choice) == len(subfolders) + 2:
                 return category_folder
             elif int(choice) == len(subfolders) + 3:
-                raise GoBackException
+                if not folder_stack:
+                    raise GoBackException
+                else:
+                    category_folder = folder_stack.pop()
             else:
+                folder_stack.append(category_folder)
                 category_folder = os.path.join(category_folder, subfolders[int(choice) - 1])
         else:
             print("Invalid choice. Please enter a number between 1 and", len(subfolders) + 3)
