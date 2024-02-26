@@ -105,7 +105,7 @@ def select_files(root, file_paths=None, use_terminal=False):
             root.deiconify()
 
             # Ask the user if they want to continue
-            if messagebox.askyesno("Continue?", "Do you want to move another file?"):
+            if messagebox.askyesno("Continue?", "Do you want to move another file or files?"):
                 # Schedule the next file selection
                 root.after(500, select_files, root)  # Try again after 0.5 seconds
             else:
