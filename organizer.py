@@ -7,6 +7,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from colorama import Fore, Style
 
 # Define categories and their corresponding folders
 category_folders = {
@@ -25,20 +26,20 @@ class GoBackException(Exception):
 def get_subfolder(category_folder):
     folder_stack = []
     while True:
-        print("Choose a subfolder:")
+        print(Fore.BLUE + "Choose a subfolder:")
         subfolders = [f.name for f in os.scandir(category_folder) if f.is_dir()]
         for i, subfolder in enumerate(subfolders, start=1):
-            print(f"{i}. {subfolder}")
-        print(f"{len(subfolders) + 1}. Create new subfolder")
-        print(f"{len(subfolders) + 2}. Select this folder")
-        print(f"{len(subfolders) + 3}. Go back")
-        choice = input("Enter the number corresponding to your choice: ")
+            print(Fore.GREEN + f"{i}. {subfolder}")
+        print(Fore.YELLOW + f"{len(subfolders) + 1}. Create new subfolder")
+        print(Fore.YELLOW + f"{len(subfolders) + 2}. Select this folder")
+        print(Fore.YELLOW + f"{len(subfolders) + 3}. Go back")
+        choice = input(Fore.BLUE + "Enter the number corresponding to your choice: " + Style.RESET_ALL)
         if choice.isdigit() and 1 <= int(choice) <= len(subfolders) + 3:
             if int(choice) == len(subfolders) + 1:
                 while True:
-                    new_subfolder = input("Enter the name of the new subfolder: ")
+                    new_subfolder = input(Fore.BLUE + "Enter the name of the new subfolder: ")
                     if new_subfolder in subfolders:
-                        print("A subfolder with this name already exists. Please enter a different name.")
+                        print(Fore.RED +"A subfolder with this name already exists. Please enter a different name.")
                     else:
                         return os.path.join(category_folder, new_subfolder)
             elif int(choice) == len(subfolders) + 2:
@@ -52,22 +53,23 @@ def get_subfolder(category_folder):
                 folder_stack.append(category_folder)
                 category_folder = os.path.join(category_folder, subfolders[int(choice) - 1])
         else:
-            print("Invalid choice. Please enter a number between 1 and", len(subfolders) + 3)
+            print(Fore.RED + "Invalid choice. Please enter a number between 1 and", len(subfolders) + 3)
 
 # Function to prompt user for category
 def get_category():
     while True:
-        print("Choose a category for the file:")
+        print(Fore.BLUE + "Choose a category for the file:")
         for i, category in enumerate(category_folders.keys(), start=1):
-            print(f"{i}. {category}")
-        print(f"{len(category_folders) + 1}. Go back")
-        choice = input("Enter the number corresponding to the category: ")
+            print(Fore.GREEN + f"{i}. {category}")
+        print(Style.RESET_ALL)
+        print(Fore.YELLOW + f"{len(category_folders) + 1}. Go back")
+        choice = input(Fore.BLUE + "Enter the number corresponding to the category: ")
         if choice.isdigit() and 1 <= int(choice) <= len(category_folders) + 1:
             if int(choice) == len(category_folders) + 1:
                 raise GoBackException
             return list(category_folders.keys())[int(choice) - 1]
         else:
-            print("Invalid choice. Please enter a number between 1 and", len(category_folders) + 1)
+            print(Fore.RED + "Invalid choice. Please enter a number between 1 and", len(category_folders) + 1)
 
 # Function to move file to specified category folder
 def organize_file(file_path, category):
@@ -78,7 +80,7 @@ def organize_file(file_path, category):
     file_name = os.path.basename(file_path)
     destination_path = os.path.join(destination_folder, file_name)
     shutil.move(file_path, destination_path)
-    print(f"File moved to {destination_folder}.")
+    print(Fore.GREEN + f"File moved to {destination_folder}.")
 
 def select_files(root, file_paths=None, use_terminal=False):
     try:
@@ -89,16 +91,16 @@ def select_files(root, file_paths=None, use_terminal=False):
             return
         for file_path in root.tk.splitlist(file_paths):
             if not os.path.exists(file_path):
-                print(f"File not found: {file_path}. Please select a valid file.")
+                print(Fore.RED + f"File not found: {file_path}. Please select a valid file.")
                 continue
-            print(f"Processing file: {file_path}")
+            print(Fore.YELLOW + f"Processing file: {file_path}")
             while True:
                 try:
                     category = get_category()
                     organize_file(file_path, category)
                     break
                 except GoBackException:
-                    print("Going back...")
+                    print(Fore.YELLOW + "Going back...")
             # Make the root window visible
                     
         if not use_terminal:
@@ -111,7 +113,7 @@ def select_files(root, file_paths=None, use_terminal=False):
             else:
                 root.destroy()
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(Fore.RED + f"An error occurred: {e}")
         root.destroy()
 
 class DownloadHandler(FileSystemEventHandler):
@@ -121,7 +123,7 @@ class DownloadHandler(FileSystemEventHandler):
     def on_modified(self, event):
         if not event.is_directory and event.event_type == "modified":
             time.sleep(10)
-            print(f"Detected modified file: {event.src_path}")
+            print(Fore.MAGENTA + f"Detected modified file: {event.src_path}")
             if not event.src_path.endswith(".tmp") and not event.src_path.endswith(".crdownload"):
                 select_files(self.root, [event.src_path], use_terminal=True)
 
@@ -144,7 +146,7 @@ def main():
         except KeyboardInterrupt:
             observer.stop()
             root.destroy()
-            print("Observer stopped.")
+            print(Fore.GREEN + "Observer stopped.")
         observer.join()
     else:
         # Otherwise, just open the file selection dialog
