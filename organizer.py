@@ -80,10 +80,11 @@ def organize_file(file_path, category):
     shutil.move(file_path, destination_path)
     print(f"File moved to {destination_folder}.")
 
-def select_files(root, file_paths=None):
+def select_files(root, file_paths=None, use_terminal=False):
     try:
-        if file_paths is None:
-            file_paths = filedialog.askopenfilenames(parent=root)
+        if not use_terminal:
+            if file_paths is None:
+                file_paths = filedialog.askopenfilenames(parent=root)
         if not file_paths:
             return
         for file_path in root.tk.splitlist(file_paths):
@@ -98,16 +99,17 @@ def select_files(root, file_paths=None):
                     break
                 except GoBackException:
                     print("Going back...")
+            # Make the root window visible
+                    
+        if not use_terminal:
+            root.deiconify()
 
-        # Make the root window visible
-        root.deiconify()
-
-        # Ask the user if they want to continue
-        if messagebox.askyesno("Continue?", "Do you want to move another file?"):
-            # Schedule the next file selection
-            root.after(500, select_files, root)  # Try again after 0.5 seconds
-        else:
-            root.destroy()
+            # Ask the user if they want to continue
+            if messagebox.askyesno("Continue?", "Do you want to move another file?"):
+                # Schedule the next file selection
+                root.after(500, select_files, root)  # Try again after 0.5 seconds
+            else:
+                root.destroy()
     except Exception as e:
         print(f"An error occurred: {e}")
         root.destroy()
@@ -116,11 +118,12 @@ class DownloadHandler(FileSystemEventHandler):
     def __init__(self, root):
         self.root = root
 
-    def on_created(self, event):
-        if not event.is_directory and event.event_type == "created":
-            time.sleep(10)  # wait for 1 second
-            print(f"Detected new file: {event.src_path}")
-            select_files(self.root, event.src_path)
+    def on_modified(self, event):
+        if not event.is_directory and event.event_type == "modified":
+            time.sleep(10)
+            print(f"Detected modified file: {event.src_path}")
+            if not event.src_path.endswith(".tmp") and not event.src_path.endswith(".crdownload"):
+                select_files(self.root, [event.src_path], use_terminal=True)
 
 def main():
     # Create the root Tk window
