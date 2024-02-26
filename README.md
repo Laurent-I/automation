@@ -32,7 +32,7 @@ The script requires Python 3 and the following Python packages:
 You can install the required packages using pip:
 
 ```bash
-pip install watchdog
+pip install watchdog colorama
 ```
 **Note:** The other packages are part of the Python Standard Library and should be available by default.
 
